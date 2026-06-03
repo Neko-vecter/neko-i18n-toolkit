@@ -1,4 +1,4 @@
-# Neko.vecter i18n Toolkit
+# Neko i18n Toolkit
 
 ## toml file design
 
