@@ -32,6 +32,9 @@ def main():
 
     for f in args.input:
         path = Path(f).resolve()
+        
+        if path.suffix not in [".md", ".mdx"]:
+            raise ValueError(f"Invalid file type: {path.suffix}, only .md/.mdx allowed")
 
         try:
             rel = path.relative_to(DOCS_FOLDER)
@@ -52,6 +55,10 @@ def main():
             # toml_file = build_middleware_base / current_lang / rel_path.with_suffix(".toml")
             toml_file = build_middleware_base / current_lang / "docusaurus-plugin-content-docs/current" / rel_path.with_suffix(".toml")
             target_md = output_root / rel_path
+            
+            if not md_file.exists():
+                logger.warning(f"Skip missing file: {md_file}")
+                continue
 
             try:
                 rebuild_file(md_file, toml_file, target_md)

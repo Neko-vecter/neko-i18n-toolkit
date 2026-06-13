@@ -24,6 +24,19 @@ def main():
 
     args = parser.parse_args()
 
+    DOCS_FOLDER = Path("docs").resolve()
+
+    for f in args.input:
+        file_path = Path(f).resolve()
+
+        if file_path.suffix not in [".md", ".mdx"]:
+            raise ValueError(f"Invalid file type: {file_path.suffix}, only .md/.mdx allowed")
+
+        try:
+            file_path.relative_to(DOCS_FOLDER)
+        except ValueError:
+            raise ValueError(f"Invalid input: {file_path} is not under docs/")
+
     # build_middleware_base = "i18n_middleware"
     build_middleware_base = "i18n"
     build_cache_base = ".build_cache"
