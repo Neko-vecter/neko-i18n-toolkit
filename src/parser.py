@@ -5,7 +5,7 @@ def normalize(text: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 def get_block_key(content: str) -> str:
-    return hashlib.md5(normalize(content).encode("utf-8")).hexdigest()[:16]
+    return hashlib.sha256(normalize(content).encode("utf-8")).hexdigest()[:16]
 
 def parse_blocks(md_text: str):
     lines = md_text.splitlines(keepends=True)
