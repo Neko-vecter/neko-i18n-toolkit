@@ -58,6 +58,5 @@ def main():
             except Exception as e:
                 logger.error(f"Error rebuilding {md_file}: {e}")
 
-
 if __name__ == "__main__":
     main()
