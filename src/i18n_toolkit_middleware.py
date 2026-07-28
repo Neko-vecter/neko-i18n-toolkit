@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 if os.getenv("DASHSCOPE_API_KEY"):
     logger.info("API define translation enabled")
-    from backend.qwen_backend import translate_ai
+    from backend.ai_backend import translate_ai
     AI_TRANSLATION_ENABLED = True
 else:
     logger.info("API undefine translation disabled (DASHSCOPE_API_KEY not set)")

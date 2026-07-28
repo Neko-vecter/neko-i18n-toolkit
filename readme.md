@@ -22,13 +22,13 @@ The extension makes these blocks easy to distinguish.
 ### build middleware file
 
 ```
-python3 <path_to>/build_file_middleware.py -i docs/<path_to_file1> docs/<path_to_file2>
+python3 <path_to>/build_file_middleware.py --lang en -i docs/<path_to_file1> docs/<path_to_file2>
 ```
 
 ### build i18n file
 
 ```
-python3 <path_to>/build_file_i18n.py -i docs/<path_to_file1> docs/<path_to_file2>
+python3 <path_to>/build_file_i18n.py --lang en -i docs/<path_to_file1> docs/<path_to_file2>
 ```
 
 ### build all file inside docs to middleware
@@ -46,3 +46,9 @@ python3 <path_to>/sync_to_i18n.py
 ```
 
 it will build toml file inside `i18n_middleware` to `i18n`.
+
+## env var
+
+- `DASHSCOPE_API_KEY`: api key
+- `DASHSCOPE_BASE_URL`: api url
+- `DASHSCOPE_MODEL`: model
