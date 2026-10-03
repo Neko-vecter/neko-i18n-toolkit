@@ -5,3 +5,22 @@ __pycache__
 
 # macos
 .DS_Store
+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Whether you use PnP or not, the node_modules folder is often used to store
+# build artifacts that should be gitignored
+node_modules
+dist
+
+.pnpm-store/
+.pnp.*
+
+dev-reference
+project-demo
+*.tgz
