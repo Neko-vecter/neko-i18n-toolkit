@@ -8,7 +8,7 @@
 [[block]] 
 key = "sha256 for origin"
 type = "mdxJsxFlowElement"
-composite: true
+composite = true
 origin = '''
 This is the original source text that needs translation.
 It can span multiple lines comfortably.
