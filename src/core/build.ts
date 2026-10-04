@@ -55,6 +55,23 @@ function translationForBlock(
     return candidates.length === 1 ? candidates[0]![1] : undefined;
 }
 
+function compositeTranslationForBlock(
+    block: ReturnType<typeof extractBlocks>[number],
+    middleware: MiddlewareDocument | MiddlewareTranslationMap,
+): string | undefined {
+    if (isMiddlewareDocument(middleware)) {
+        const exact = middleware.blocks.find(
+            (candidate) =>
+                candidate.key === block.key && candidate.composite === true,
+        );
+        return exact?.translate;
+    }
+
+    return Object.prototype.hasOwnProperty.call(middleware, block.key)
+        ? middleware[block.key]
+        : undefined;
+}
+
 function removeMiddlewareBoundaryNewline(translation: string): string {
     // TOML multiline strings retain the newline immediately before the closing
     // delimiter. It is a serialization boundary, not part of the AST node
@@ -168,9 +185,12 @@ function renderNode(
             : removeMiddlewareBoundaryNewline(translation);
     }
 
+    const storedTemplate = compositeTranslationForBlock(node.block, middleware);
     const template =
-        node.block.template ??
-        normalizeBlockContent(node.block.origin, node.block.indent);
+        storedTemplate === undefined
+            ? node.block.template ??
+              normalizeBlockContent(node.block.origin, node.block.indent)
+            : removeMiddlewareBoundaryNewline(storedTemplate);
     return renderTemplate(template, node.children, middleware);
 }
 

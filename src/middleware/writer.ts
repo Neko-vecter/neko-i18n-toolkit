@@ -68,6 +68,35 @@ export function writeMiddleware(
     writeFileSync(path, content, "utf8");
 }
 
+const blockPlaceholder = /\{\{([^{}\r\n]+)\}\}/gu;
+
+function sameBlockKind(left: MiddlewareBlock, right: MiddlewareBlock): boolean {
+    return (
+        (left.composite === true) === (right.composite === true) &&
+        (left.type === undefined ||
+            right.type === undefined ||
+            left.type === right.type)
+    );
+}
+
+function compositeStructureKey(block: MiddlewareBlock): string {
+    const shell = block.origin.replace(blockPlaceholder, "{{child}}");
+    return `${block.type ?? ""}:${getBlockKey(shell)}`;
+}
+
+/** Keep the translated shell and align its child references to the current origin. */
+function updateTemplateKeys(translation: string, origin: string): string {
+    const currentKeys = Array.from(origin.matchAll(blockPlaceholder), (match) =>
+        match[1]!.trim(),
+    );
+    let index = 0;
+    return translation.replace(blockPlaceholder, (placeholder) => {
+        const currentKey = currentKeys[index];
+        index += 1;
+        return currentKey === undefined ? placeholder : `{{${currentKey}}}`;
+    });
+}
+
 export function mergeExistingTranslations(
     blocks: MiddlewareBlock[],
     existing: MiddlewareDocument | MiddlewareTranslationMap,
@@ -94,15 +123,77 @@ export function mergeExistingTranslations(
         fallbackByOrigin.set(originKey, candidates);
     }
 
+    const existingCompositeBlocks = isMiddlewareDocument(existing)
+        ? existing.blocks.filter((block) => block.composite === true)
+        : [];
+    const fallbackByCompositeStructure = new Map<string, MiddlewareBlock[]>();
+    for (const block of existingCompositeBlocks) {
+        const structureKey = compositeStructureKey(block);
+        const candidates = fallbackByCompositeStructure.get(structureKey) ?? [];
+        candidates.push(block);
+        fallbackByCompositeStructure.set(structureKey, candidates);
+    }
+
+    const currentLeafBlocks = blocks.filter((block) => block.composite !== true);
+    const currentByOrigin = new Map<string, MiddlewareBlock[]>();
+    for (const block of currentLeafBlocks) {
+        const originKey = getBlockKey(block.origin);
+        const candidates = currentByOrigin.get(originKey) ?? [];
+        candidates.push(block);
+        currentByOrigin.set(originKey, candidates);
+    }
+
+    const currentCompositeBlocks = blocks.filter(
+        (block) => block.composite === true,
+    );
+    const currentByCompositeStructure = new Map<string, MiddlewareBlock[]>();
+    for (const block of currentCompositeBlocks) {
+        const structureKey = compositeStructureKey(block);
+        const candidates = currentByCompositeStructure.get(structureKey) ?? [];
+        candidates.push(block);
+        currentByCompositeStructure.set(structureKey, candidates);
+    }
+
     const merged = blocks.map((block) => {
-        if (block.composite === true) return { ...block };
         if (Object.prototype.hasOwnProperty.call(translations, block.key)) {
             preservedKeys.push(block.key);
-            return { ...block, translate: translations[block.key]! };
+            const translate = translations[block.key]!;
+            return {
+                ...block,
+                translate:
+                    block.composite === true
+                        ? updateTemplateKeys(translate, block.origin)
+                        : translate,
+            };
         }
 
-        const candidates = fallbackByOrigin.get(getBlockKey(block.origin)) ?? [];
-        if (candidates.length === 1) {
+        if (block.composite === true) {
+            const structureKey = compositeStructureKey(block);
+            const candidates =
+                fallbackByCompositeStructure.get(structureKey) ?? [];
+            const currentCandidates =
+                currentByCompositeStructure.get(structureKey) ?? [];
+            if (candidates.length === 1 && currentCandidates.length === 1) {
+                preservedKeys.push(block.key);
+                return {
+                    ...block,
+                    translate: updateTemplateKeys(
+                        candidates[0]!.translate,
+                        block.origin,
+                    ),
+                };
+            }
+            return { ...block };
+        }
+
+        const originKey = getBlockKey(block.origin);
+        const candidates = (fallbackByOrigin.get(originKey) ?? []).filter(
+            (candidate) => sameBlockKind(candidate, block),
+        );
+        const currentCandidates = (currentByOrigin.get(originKey) ?? []).filter(
+            (candidate) => sameBlockKind(candidate, block),
+        );
+        if (candidates.length === 1 && currentCandidates.length === 1) {
             preservedKeys.push(block.key);
             return { ...block, translate: candidates[0]!.translate };
         }
