@@ -43,4 +43,4 @@ jobs:
           name: Release ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            neko-vecter-lab-i18n-toolkit*.tgz
+            neko_vecter-i18n-toolkit*.tgz

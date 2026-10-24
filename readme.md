@@ -22,7 +22,7 @@ The extension makes these blocks easy to distinguish.
 ## Add package
 
 ```shell
-pnpm add -D @neko-vecter-lab/i18n-toolkit
+pnpm add -D @neko_vecter/i18n-toolkit
 ```
 
 ## Development
