@@ -62,7 +62,7 @@ pnpm i18n-toolkit sync --lang en -i docs/guide.md
 `-i/--input` can be repeated or can be replaced by a directory. If it is omitted, all `.md` and `.mdx` files below `docs/` are processed. Multiple target languages can be passed after `--lang`:
 
 ```shell
-yarn cli extract -i docs/guide.md docs/api.md --lang en ja
+pnpm i18n-toolkit extract -i docs/guide.md docs/api.md --lang en ja
 ```
 
 The file layout
